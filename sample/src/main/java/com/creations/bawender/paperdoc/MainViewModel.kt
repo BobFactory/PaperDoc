@@ -15,7 +15,7 @@ class MainViewModel : ViewModel() {
     val uiNotes = mutableStateListOf<Note>()
 
     init {
-        Database.notesCollection.watchAll()
+        collectionOf<Note>().watchAll()
             .map { it.toMutableList() }
             .onEach { tasks ->
                 uiNotes.clear()
@@ -26,14 +26,14 @@ class MainViewModel : ViewModel() {
 
     fun addRandomNote() = viewModelScope.launch {
         val note = Note(
-            text = "Random Note ${Database.notesCollection.count()}",
+            text = "Random Note ${collectionOf<Note>().count()}",
             createdAt = LocalDate.now()
         )
-        Database.notesCollection.setDoc(note.key, note)
+        collectionOf<Note>().setDoc(note.key, note)
     }
 
     fun deleteNote(key: String) = viewModelScope.launch {
-        Database.notesCollection.deleteDoc(key)
+        collectionOf<Note>().deleteDoc(key)
     }
 
 }

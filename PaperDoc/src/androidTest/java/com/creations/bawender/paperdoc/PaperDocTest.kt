@@ -7,6 +7,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 import org.junit.Assert.*
+import org.junit.Before
+import java.util.UUID
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -14,11 +16,24 @@ import org.junit.Assert.*
  * See [testing documentation](http://d.android.com/tools/testing).
  */
 @RunWith(AndroidJUnit4::class)
-class ExampleInstrumentedTest {
-    @Test
-    fun useAppContext() {
-        // Context of the app under test.
+class PaperDocTest {
+
+    data class User(
+        val key: String = UUID.randomUUID().toString(),
+        val name: String
+    )
+
+    @Before
+    fun setUp() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.creations.bawender.paperdoc.test", appContext.packageName)
+        PaperDoc.init(appContext)
     }
+
+    @Test
+    fun returns_the_same_collectionRef_if_already_initiated() {
+        val firstCollection = collectionOf<User>()
+        val secondCollection = collectionOf<User>()
+        assertEquals(firstCollection, secondCollection)
+    }
+
 }

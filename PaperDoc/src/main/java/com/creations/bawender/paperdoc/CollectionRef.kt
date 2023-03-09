@@ -42,23 +42,25 @@ class CollectionRef<T>(
         }
     }
 
-    suspend fun getAllDocs(): List<T> = mutex.withLock { documents.values.toList() }
+    suspend fun deleteAllDocs() = mutex.withLock(Dispatchers.IO) {
+        val old = documents
+        documents.clear()
+        book.write(collectionKey, documents)
 
-    suspend fun first(): T? = mutex.withLock {
-        documents.values.firstOrNull()
+        old.forEach { (_, value) ->
+            updates.tryEmit(CollectionData(CollectionEvents.DELETE, value))
+        }
     }
 
-    suspend fun last(): T? = mutex.withLock {
-        documents.values.lastOrNull()
-    }
+    fun getAllDocs(): List<T> = documents.values.toList()
 
-    suspend fun getDoc(key: String): T? = mutex.withLock {
-        documents[key]
-    }
+    fun first(): T? = documents.values.firstOrNull()
 
-    suspend fun count(): Int = mutex.withLock {
-        documents.size
-    }
+    fun last(): T? = documents.values.lastOrNull()
+
+    fun getDoc(key: String): T? = documents[key]
+
+    fun count(): Int = documents.size
 
     fun watch(includeExisting: Boolean = true): Flow<CollectionData<T>> = channelFlow {
         if (includeExisting) {

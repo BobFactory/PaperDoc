@@ -6,6 +6,7 @@ import io.paperdb.Paper
 
 object PaperDoc {
     private lateinit var book: Book
+    private val collectionsMap = mutableMapOf<String, CollectionRef<*>>()
 
     private fun assertInitialized() {
         if (!::book.isInitialized) {
@@ -20,8 +21,15 @@ object PaperDoc {
 
     fun <T> collection(key: String): CollectionRef<T> {
         assertInitialized()
-        val documents = book.read(key) ?: mutableMapOf<String, T>()
-        return CollectionRef(key, book, documents)
+
+        return if (collectionsMap.containsKey(key)) {
+            collectionsMap[key] as CollectionRef<T>
+        } else {
+            val documents = book.read(key) ?: mutableMapOf<String, T>()
+            val collection = CollectionRef(key, book, documents)
+            collectionsMap[key] = collection
+            collection
+        }
     }
 
 }
@@ -32,7 +40,11 @@ inline fun <reified T> collectionOf(): CollectionRef<T> {
 }
 
 
+fun main() {
+    val usersBook = Paper.book("users")
+    usersBook.write("1213", "user1")
 
 
+}
 
 
